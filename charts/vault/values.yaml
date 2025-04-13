@@ -1,6 +1,7 @@
 vault:
   global:
-    enabled: false
+    enabled: true
+    tlsDisable: false
     serverTelemetry:
       # Enable integration with the Prometheus Operator
       # See the top level serverTelemetry section below before enabling this feature.
@@ -20,22 +21,17 @@ vault:
           hosts:
             - vault.local
     dataStorage:
-      enabled: true
+      enabled: false
       size: "10Gi"
     standalone:
       enabled: true
     dev:
       enabled: true
-    ui:
-      enabled: true
-      serviceType: "LoadBalancer"
-      # serviceNodePort: null
-      externalPort: 8200
     ha:
       enabled: false
       replicas: 3
       raft:
-        enabled: true
+        enabled: false
         config: |
           ui = true
           service_registration "kubernetes" {}
@@ -88,3 +84,9 @@ vault:
   serverTelemetry:
     serviceMonitor:
       enabled: false
+
+  ui:
+    enabled: true
+    serviceType: "LoadBalancer"
+    # serviceNodePort: null
+    externalPort: 8200
