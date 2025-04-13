@@ -1,0 +1,90 @@
+vault:
+  global:
+    enabled: false
+    serverTelemetry:
+      # Enable integration with the Prometheus Operator
+      # See the top level serverTelemetry section below before enabling this feature.
+      prometheusOperator: false
+  csi:
+    enabled: true
+  server:
+    ingress:
+      enabled: true
+      ingressClassName: "cilium"
+      hosts:
+        - host: vault.local
+      annotations:
+        cert-manager.io/cluster-issuer: "ca-issuer"
+      tls:
+        - secretName: tls-vault
+          hosts:
+            - vault.local
+    dataStorage:
+      enabled: true
+      size: "10Gi"
+    standalone:
+      enabled: true
+    dev:
+      enabled: true
+    ui:
+      enabled: true
+      serviceType: "LoadBalancer"
+      # serviceNodePort: null
+      externalPort: 8200
+    ha:
+      enabled: false
+      replicas: 3
+      raft:
+        enabled: true
+        config: |
+          ui = true
+          service_registration "kubernetes" {}
+
+          listener "tcp" {
+            address = ":8200"
+            cluster_address = ":8201"
+            tls_disable = 1
+            telemetry {
+              unauthenticated_metrics_access = "true"
+            }
+          }
+
+          storage "raft" {
+            path = "/vault/data"
+            retry_join {
+              # Define how many times to attempt to join the cluster
+
+              leader_api_addr_retry_max = 5
+
+              # Define the backoff (in milliseconds) between join attempts
+
+              leader_api_addr_retry_backoff = "10s"
+              auto_join_scheme = "http"
+              auto_join = "provider=k8s label_selector=\"app.kubernetes.io/name=vault,app.kubernetes.io/instance=vault\" namespace=\"vault\""
+            }
+          }
+
+          telemetry {
+            prometheus_retention_time = "24h"
+            disable_hostname = true
+          }
+      config: |
+        ui = true
+        service_registration "kubernetes" {}
+
+        listener "tcp" {
+          address = ":8200"
+          cluster_address = ":8201"
+          tls_disable = 1
+          telemetry {
+            unauthenticated_metrics_access = "true"
+          }
+        }
+        telemetry {
+          prometheus_retention_time = "24h"
+          disable_hostname = true
+        }
+
+  serverTelemetry:
+    serviceMonitor:
+      enabled: false
