@@ -1,7 +1,7 @@
 vault:
   global:
     enabled: true
-    tlsDisable: false
+    tlsDisable: true
     serverTelemetry:
       # Enable integration with the Prometheus Operator
       # See the top level serverTelemetry section below before enabling this feature.
